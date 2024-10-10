@@ -9,6 +9,7 @@ class PromptController(BaseModel):
     comedian: PromptTemplate
     speaker: PromptTemplate
     translation: PromptTemplate
+    role_detector: PromptTemplate
 
     def __init__(self, prompt_dir: Text):
         from chatbot.utils import fileio

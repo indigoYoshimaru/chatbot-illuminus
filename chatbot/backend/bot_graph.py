@@ -15,7 +15,6 @@ class GraphState(TypedDict):
     Attributes:
         question: question
         generation: LLM generation
-        web_search: whether to add search
         documents: list of documents
     """
 
@@ -24,6 +23,7 @@ class GraphState(TypedDict):
     in_lang: Text
     out_lang: Text
     trans_sent: Text
+    role: Text
     prompt_template: PromptTemplate
     documents: List[Text]
 
@@ -42,20 +42,16 @@ def retrieve(state):
     try:
         question = state["question"]
         logger.info(f"Running retrieval for question {question}...")
-        documents = retriever.invoke(question)
-        assert documents, f"No document found for question {question}"
-    except Exception as e:
+        docs = retriever.invoke(question)
+        assert docs, f"No document found for question {question}"
+    except AssertionError as e:
         logger.warning(f"{type(e).__name__}: {e}")
-        return dict(
-            documents=[],
-            question=question,
-        )
+        state["documents"] = []
+
     else:
-        logger.success(f"Found documents {documents} for question {question}")
-        return dict(
-            documents=documents,
-            question=question,
-        )
+        logger.success(f"Found documents {docs} for question {question}")
+        state["documents"] = docs
+    return state
 
 
 def generate(state):
@@ -69,16 +65,17 @@ def generate(state):
         state (dict): New key added to state, generation, that contains LLM generation
     """
     question = state["question"]
+    prompt_template = state["prompt_template"]
     documents = state.get("documents", [])
     logger.info(f"Generating answer for question {question}...")
-
     # RAG generation
-    rag_chain = prompt_controller.inTextuction | llm
-    generation = rag_chain.invoke({"context": documents, "question": question})
+    rag_chain = prompt_template | llm
+    generation = rag_chain.invoke({"documents": documents, "question": question})
     return dict(
         documents=documents,
         question=question,
         generation=generation,
+        role=state["role"],
     )
 
 
@@ -89,8 +86,8 @@ def translate(state):
     p_template = prompt_controller.translation.invoke(
         {"in_lang": in_lang, "out_lang": out_lang, "input": trans_sent}
     )
-    print(p_template.to_Texting())
-    generation = llm.invoke(p_template.to_Texting())
+    print(p_template.to_string())
+    generation = llm.invoke(p_template.to_string())
     return dict(trans_sent=generation)
 
 
@@ -102,12 +99,18 @@ def route_role(state):
         "Motivational speaker": "speaker",
         "Son": "son",
     }
-    role = role_dict.get(role, "researcher")
+    role = role_dict.get(role, "")
+    if not role:
+        role_detector = prompt_controller.role_detector | llm
+        generation = role_detector.invoke(dict(question=state["question"])).content
+        role = role_dict.get(generation, "son")
     logger.info(f"Chatbot role: {role}")
-    template = prompt_controller.model_dump()[role]
+    template = prompt_controller.__getattribute__(role)
+    logger.info(f"Using template {template}")
     return dict(
         prompt_template=template,
         question=state["question"],
+        role=role,
     )
 
 
@@ -141,8 +144,10 @@ def run_workflow(
         for output in outputs:
             for k, v in output.items():
                 logger.info(f"{k}: {v}")
-    else:
-        final_result = outputs[-1]
-        logger.info(f"Final output: {final_result}")
-        generation = final_result["generation"]
-    return generation
+        generation = output['generate']
+        return f"{generation['generation'].content}\nRole: {generation['role']}"
+
+    final_result = list(outputs)[-1]
+    logger.info(f"Final output: {final_result}")
+    generation = final_result["generate"]
+    return f"{generation['generation'].content}\nRole: {generation['role']}"

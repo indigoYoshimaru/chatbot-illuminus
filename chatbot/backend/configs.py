@@ -3,10 +3,10 @@ from typing import Text
 
 
 class ModelConfig(BaseModel):
-    local_llm: Text = "llama3.2"
+    model: Text = "llama3.2"
     temperature: float = 0.1
 
 
 class VectorDBConfig(BaseModel):
-    directory: Text = "data"
+    data_directory: Text = "data"
     embedding_model: Text = "nomic-embed-text-v1.5"

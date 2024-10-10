@@ -41,12 +41,14 @@ def build_db(
         doc_splits = text_splitter.split_documents(docs_list)
         vectorstore = Chroma.from_documents(
             documents=doc_splits,
-            collection_name="rag-chroma",
+            collection_name="embeddings",
             embedding=NomicEmbeddings(
                 model=embedding_model,
                 inference_mode="local",
             ),
+            persist_directory="./chroma_db",
         )
+        vectorstore.persist()
     except Exception as e:
         logger.error(f"{type(e).__name__}: {e}")
         raise e
@@ -75,13 +77,15 @@ if __name__ == "__main__":
     retriever = build_db("data", "nomic-embed-text-v1.5")
     template = prompt_controller.translation
     generator = prompt_controller.researcher | llm
+    role_detect = prompt_controller.role_detector | llm
     print(generator)
     for question in question_list:
         print(question)
         docs = retriever.invoke(question)
         print(docs)
         # doc_txt = docs[0].page_content
-        generation = generator.invoke({"document": docs, "question": question})
+        generation = generator.invoke({"documents": docs, "question": question})
+        # generation = role_detect.invoke(dict(question = question))
         # p_template = template.invoke(
         #     {"in_lang": "English", "out_lang": "Korean", "input": question}
         # )
