@@ -2,7 +2,7 @@
 name = "chatbot"
 version = "0.1.0"
 description = "Chatbot-Illuminus"
-authors = ["indigoYoshimaru <phungkhanhlinh.iu@gmail.com>"]
+authors = ["indigoYoshimaru"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -10,6 +10,11 @@ python = "^3.10"
 poetry = "^1.8.3"
 pydantic = "^2.9.2"
 streamlit = "^1.39.0"
+langchain = "^0.3.3"
+langchain-community = "^0.3.2"
+langchain-core = "^0.3.10"
+langgraph = "^0.2.35"
+ollama = "^0.3.11"
 
 
 [build-system]

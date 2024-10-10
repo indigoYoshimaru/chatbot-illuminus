@@ -19,9 +19,7 @@ def build_db(
 
         docs = glob.glob(f"{data_directory}/*.txt")
         assert docs, "No .txt document found"
-        # docs_list = []
-        # for doc in docs:
-        #     docs_list += TextLoader(doc).load()
+       
         docs = [TextLoader(doc).load() for doc in docs]
         docs_list = [item for sublist in docs for item in sublist]
 
@@ -55,40 +53,3 @@ def build_db(
     else:
         retriever = vectorstore.as_retriever()
         return retriever
-
-
-if __name__ == "__main__":
-    from langchain_community.chat_models import ChatOllama
-    from chatbot.backend.prompts import PromptController
-
-    local_model = "llama3.2"
-    llm = ChatOllama(model=local_model, temperature=0.5)
-    # question = "나는 정치에 대해 유머러스한 견해를 갖고 싶다."
-    question_list = [
-        "What's your name?",
-        "I want a humorous take on politics.",
-        "나는 정치에 대해 유머러스한 견해를 갖고 싶다.",
-        'how to play "which one is it"?',
-        '"어느 것이야?" 게임하는 방법?',
-    ]
-
-    prompt_controller = PromptController(prompt_dir="chatbot/prompts.yaml")
-
-    retriever = build_db("data", "nomic-embed-text-v1.5")
-    template = prompt_controller.translation
-    generator = prompt_controller.researcher | llm
-    role_detect = prompt_controller.role_detector | llm
-    print(generator)
-    for question in question_list:
-        print(question)
-        docs = retriever.invoke(question)
-        print(docs)
-        # doc_txt = docs[0].page_content
-        generation = generator.invoke({"documents": docs, "question": question})
-        # generation = role_detect.invoke(dict(question = question))
-        # p_template = template.invoke(
-        #     {"in_lang": "English", "out_lang": "Korean", "input": question}
-        # )
-        # print(p_template.to_string())
-        # generation = llm.invoke(p_template.to_string())
-        print(generation.content)

@@ -119,9 +119,8 @@ def detect_language(state): ...
 
 workflow = StateGraph(GraphState)
 workflow.add_node("route_role", route_role)
-workflow.add_node("retrieve", retrieve)  # retrieve
-workflow.add_node("generate", generate)  # generate
-# workflow.add_node("translate", translate)  # translate
+workflow.add_node("retrieve", retrieve)
+workflow.add_node("generate", generate)
 workflow.add_edge(START, "route_role")
 workflow.add_edge("route_role", "retrieve")
 workflow.add_edge("retrieve", "generate")
@@ -144,7 +143,7 @@ def run_workflow(
         for output in outputs:
             for k, v in output.items():
                 logger.info(f"{k}: {v}")
-        generation = output['generate']
+        generation = output["generate"]
         return f"{generation['generation'].content}\nRole: {generation['role']}"
 
     final_result = list(outputs)[-1]

@@ -3,13 +3,6 @@ import time
 from chatbot.backend import *
 from chatbot.backend.bot_graph import run_workflow
 
-# if "backend_initialized" not in st.session_state:
-#     prompt_controller, llm, retriever = init()
-#     st.session_state.backend_initialized = True
-
-# if prompt_controller and llm and retriever:
-
-
 st.markdown(
     """
     <style>
@@ -54,7 +47,6 @@ role = st.selectbox(
     "Which role would you like the chatbot to act as?",
     ("Researcher", "Stand-up comedian", "Motivational speaker", "Son", "Auto-detect"),
 )
-# st.write("You selected:", role)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # Accept user input
