@@ -108,3 +108,6 @@ def retrieve(state):
 ## Korean
 ![politics-ko.png](results/politics-ko.png)
 ![son-ko-en.png](results/son-ko-en.png)
+
+<video src="results/screen-capture.mp4" controls="controls" style="max-width: 730px;">
+</video>
